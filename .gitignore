@@ -1,0 +1,9 @@
+*.pyc
+*~
+*.swp
+*.~m
+*.aux
+*.log
+*.out
+*.backup
+
