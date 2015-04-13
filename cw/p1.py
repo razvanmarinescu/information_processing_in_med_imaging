@@ -24,7 +24,8 @@ labeled_temp_filenames = [name + "_brain.nii" for name in template_filenames_stu
 aladin_options = "-speeeeed ";
 
 # max 4 levels, 300 iterations each
-f3d_options = "-ln 4 -maxit 10"; # I think 4 lvl x 200 it is ideal
+f3d_options = "-ln 4 -maxit 200"; # I think 4 lvl x 200 it is ideal
+#f3d_options = "-ln 1 -maxit 10"; # I think 4 lvl x 200 it is ideal
 # 2 lvl 200 it - 1m26sec
 # 3 lvl 300 it - 2m16sec
 # 4 lvl 300 it - 2m18sec
@@ -33,21 +34,21 @@ f3d_options = "-ln 4 -maxit 10"; # I think 4 lvl x 200 it is ideal
 exec_cmd = 1;
 
 #os.system("cd longitudinal_images/")
-for i in range(1):
+for i in range(len(long_filenames)):
   
-  for t in range(1):
-    aff_reg_cmd = 'reg_aladin -ref %s -flo %s -res %s -aff %s %s' % (long_filenames[i], template_filenames[t], aff_reg_filenames[i], aff_mat_filenames[i], aladin_options)
+  for t in range(len(template_filenames)):
+    aff_reg_cmd = 'reg_aladin -ref %s -flo %s -res t%d_%s -aff t%d_%s %s' % (long_filenames[i], template_filenames[t], t, aff_reg_filenames[i], t, aff_mat_filenames[i], aladin_options)
     print aff_reg_cmd
     if exec_cmd:
       os.system(aff_reg_cmd)
     
-    nonlin_reg_cmd = 'reg_f3d -ref %s -flo %s -res %s -aff %s -cpp %s %s' % (long_filenames[i], template_filenames[t], nonlin_reg_filenames[i], aff_mat_filenames[i], nonlin_cpp_filenames[i], f3d_options)
+    nonlin_reg_cmd = 'reg_f3d -ref %s -flo %s -res t%d_%s -aff t%d_%s -cpp t%d_%s %s' % (long_filenames[i], template_filenames[t], t, nonlin_reg_filenames[i], t, aff_mat_filenames[i], t, nonlin_cpp_filenames[i], f3d_options)
 
     print nonlin_reg_cmd
     if exec_cmd:
       os.system(nonlin_reg_cmd)
 
-    resample_cmd = 'reg_resample -ref %s -flo %s -res %s -trans %s -inter 0' % (long_filenames[i], labeled_temp_filenames[t], segmented_filenames[i], nonlin_cpp_filenames[i])
+    resample_cmd = 'reg_resample -ref %s -flo %s -res t%d_%s -trans t%d_%s -inter 0' % (long_filenames[i], labeled_temp_filenames[t], t, segmented_filenames[i], t, nonlin_cpp_filenames[i])
 
     print resample_cmd
     if exec_cmd:
