@@ -5,7 +5,7 @@ import numpy as np
 NR_TEMP = 10;
 NR_SEG = 5;
 
-DEBUG = 1
+DEBUG = 0
 
 template_filenames_stubs = ['../template_database/template_' + str(i) for i in range(NR_TEMP)]
 long_AD_baseline_filenames = ['AD_' + str(i) + '_baseline.nii' for i in range(10,10+NR_SEG)]
@@ -17,7 +17,7 @@ template_filenames = [x + ".nii" for x in template_filenames_stubs]
 long_filenames = long_AD_baseline_filenames + long_AD_followup_filenames + long_CTL_baseline_filenames + long_CTL_followup_filenames
 
 if DEBUG:
-  long_filenames = long_filenames[0]
+  long_filenames = [long_filenames[0]]
 #template_filenames = template_filenames[0]
 
 aff_reg_filenames = [name.split(".")[0] + "_aff.nii" for name in long_filenames]
@@ -43,22 +43,28 @@ sample_img = nib.load('t2_AD_11_followup_brain.nii')
 print sample_img.shape
 (dimX, dimY, dimZ) = sample_img.shape
 
+print segmented_filenames
+
+NR_TEMPLATES = len(template_filenames)
+NR_FILES = len(long_filenames)
+
 #os.system("cd longitudinal_images/")
-for i in range(len(long_filenames)):
+for i in range(NR_FILES):
   
   fused_image = np.zeros((dimX, dimY, dimZ),int)
-  for t in range(len(template_filenames)):
+  for t in range(NR_TEMPLATES):
 
-    segmented_file_full = "t%d_%s" % (t, segmented_filenames[t])
+    segmented_file_full = "t%d_%s" % (t, segmented_filenames[i])
     imgt = nib.load(segmented_file_full)
 
     data = imgt.get_data()
   
     fused_image += data
 
-  fused_image = fused_image > 5;  
+  # do majority voting
+  fused_image = (fused_image > (NR_TEMPLATES/2)).astype(np.uint8);  
   
-  nib_fused_image = nib.Nifti1Image(fused_image, np.eye(3))
-  #nib.save(nib_fused_image, segmented_filenames[i])
+  nib_fused_image = nib.Nifti1Image(fused_image, np.eye(4))
+  nib.save(nib_fused_image, segmented_filenames[i])
 
  
