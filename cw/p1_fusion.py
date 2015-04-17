@@ -61,10 +61,11 @@ for i in range(NR_FILES):
   
     fused_image += data
 
+
   # do majority voting
   fused_image = (fused_image > (NR_TEMPLATES/2)).astype(np.uint8);  
   
-  nib_fused_image = nib.Nifti1Image(fused_image, np.eye(4))
+  nib_fused_image = nib.Nifti1Image(fused_image, imgt.affine)
   nib.save(nib_fused_image, segmented_filenames[i])
 
  

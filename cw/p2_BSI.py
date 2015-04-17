@@ -3,6 +3,7 @@ import nibabel as nib
 import numpy as np
 import scipy
 from scipy import ndimage
+import pdb
 
 NR_TEMP = 10;
 NR_SEG = 15;
@@ -17,25 +18,15 @@ long_CTL_followup_filenames = ['CTL_' + str(i) + '_followup.nii' for i in range(
 baseline_filenames = long_AD_baseline_filenames + long_CTL_baseline_filenames 
 followup_filenames = long_AD_followup_filenames + long_CTL_followup_filenames
 
-aff_reg_AD_filenames = ['AD_' + str(i) + '_aff.nii' for i in range(NR_SEG)]
-aff_reg_CTL_filenames = ['CTL_' + str(i) + '_aff.nii' for i in range(NR_SEG)]
-aff_mat_AD_filenames = ['AD_' + str(i) + '_aff_mat.txt' for i in range(NR_SEG)]
-aff_mat_CTL_filenames = ['CTL_' + str(i) + '_aff_mat.txt' for i in range(NR_SEG)]
-
-aff_reg_filenames = aff_reg_AD_filenames + aff_reg_CTL_filenames
-aff_mat_filenames = aff_mat_AD_filenames + aff_mat_CTL_filenames
-aff_halfAF_mat_filenames = [f.split(".")[0] + '_halfAF.txt' for f in aff_mat_filenames]
-aff_halfFA_mat_filenames = [f.split(".")[0] + '_halfFA.txt' for f in aff_mat_filenames]
-
-seg_baseline_filenames = [name.split(".")[0] + "_brain.nii" for name in baseline_filenames]
-seg_followup_filenames = [name.split(".")[0] + "_brain.nii" for name in followup_filenames]
-dil_seg_baseline_filenames = [name.split(".")[0] + "_brain_dil.nii" for name in baseline_filenames]
-dil_seg_followup_filenames = [name.split(".")[0] + "_brain_dil.nii" for name in followup_filenames]
-
 mid_baseline_filenames = [name.split(".")[0] + "_midspace.nii" for name in baseline_filenames]
 mid_followup_filenames = [name.split(".")[0] + "_midspace.nii" for name in followup_filenames]
 seg_mid_baseline_filenames = [name.split(".")[0] + "_midspace_brain.nii" for name in baseline_filenames]
 seg_mid_followup_filenames = [name.split(".")[0] + "_midspace_brain.nii" for name in followup_filenames]
+
+seg_AD_boundary_filenames = ['AD_' + str(i) + '_BSIboundary.nii' for i in range(NR_SEG)]
+seg_CTL_boundary_filenames = ['AD_' + str(i) + '_BSIboundary.nii' for i in range(NR_SEG)]
+
+seg_boundary_filenames = seg_AD_boundary_filenames + seg_CTL_boundary_filenames
 
 aladin_options = "-speeeeed ";
 
@@ -51,64 +42,76 @@ EXEC_CMD = 1;
 
 NR_FILES = len(baseline_filenames)
 
+window = [0.45, 0.65]
 
-def dilate_img(i):
-  # baseline image
-  seg_img = nib.load(seg_baseline_filenames[i])
-  seg_data = np.array(seg_img.get_data())
-
-  dil_data = ndimage.binary_dilation(seg_data, iterations=2).astype(seg_data.dtype)
-  nib_dil_image = nib.Nifti1Image(dil_data, seg_img.affine)
-  nib.save(nib_dil_image, dil_seg_baseline_filenames[i])
-
-  # followup image
-  seg_img = nib.load(seg_followup_filenames[i])
-  seg_data = np.array(seg_img.get_data())
-
-  dil_data = ndimage.binary_dilation(seg_data, iterations=2).astype(seg_data.dtype)
-  nib_dil_image = nib.Nifti1Image(dil_data, seg_img.affine)
-  nib.save(nib_dil_image, dil_seg_followup_filenames[i])
-
-
+bsi = np.zeros(NR_FILES, float)
 #os.system("cd longitudinal_images/")
+
+
+struct1 = ndimage.generate_binary_structure(3, 2)
+
+def clip_matrix(mat, i1, i2):
+  assert(i2 < i1)
+  i1mat = np.ones(mat.shape, mat.dtype) * i1
+  i2mat = np.ones(mat.shape, mat.dtype) * i2
+  return np.minimum(np.maximum(mat, i2mat), i1mat)
+
+
+a = np.array([[1,2],[3,4]])
+print clip_matrix(a, 3.33, 1.33)
+
 for i in range(NR_FILES):
-  dilate_img(i)
+  
+  print i
+  seg_mid_base_img = nib.load(seg_mid_baseline_filenames[i])
+  seg_mid_base_data = np.array(seg_mid_base_img.get_data())
 
-  reg_cmd = 'reg_aladin -ref %s -flo %s -rmask %s -fmask %s -res %s -aff %s' % (baseline_filenames[i], followup_filenames[i], dil_seg_baseline_filenames[i], dil_seg_followup_filenames[i],aff_reg_filenames[i], aff_mat_filenames[i])
+  seg_mid_followup_img = nib.load(seg_mid_followup_filenames[i])
+  seg_mid_followup_data = np.array(seg_mid_followup_img.get_data())
 
-  if DEBUG:
-    print reg_cmd
-  if EXEC_CMD:
-    os.system(reg_cmd)
+  seg_union = ((seg_mid_base_data + seg_mid_followup_data) >= 1).astype(np.uint8); 
+  seg_intersection = ((seg_mid_base_data + seg_mid_followup_data) == 2).astype(np.uint8); 
 
-  reg_trans_cmd1 = 'reg_transform -half %s %s' % (aff_mat_filenames[i], aff_halfAF_mat_filenames[i])
-  reg_trans_cmd2 = 'reg_transform -invAff %s %s' % (aff_halfAF_mat_filenames[i], aff_halfFA_mat_filenames[i])
- 
-  if DEBUG:
-    print reg_trans_cmd1
-    print reg_trans_cmd2
-  if EXEC_CMD:
-    os.system(reg_trans_cmd1)
-    os.system(reg_trans_cmd2)
+  # dilate the union and erode the intersection
+  dil_seg_union = ndimage.binary_dilation(seg_union, structure=struct1, iterations=1).astype(seg_union.dtype)
+  ero_seg_intersection = ndimage.binary_erosion(seg_intersection, structure=struct1, iterations=1).astype(seg_intersection.dtype)
 
-  resample_img_cmd1 = 'reg_resample -ref %s -flo %s -trans %s -res %s' % (baseline_filenames[i], baseline_filenames[i], aff_halfFA_mat_filenames[i], mid_baseline_filenames[i])
-  resample_img_cmd2 = 'reg_resample -ref %s -flo %s -trans %s -res %s' % (baseline_filenames[i], followup_filenames[i], aff_halfAF_mat_filenames[i], mid_followup_filenames[i])
+  # obtain the boundary region by XORing the dilated union and eroded segmentation
+  seg_boundary = ((dil_seg_union + ero_seg_intersection ) == 1).astype(np.uint8)
 
-  if DEBUG:
-    print resample_img_cmd1
-    print resample_img_cmd2
-  if EXEC_CMD:
-    os.system(resample_img_cmd1)
-    os.system(resample_img_cmd2)
+  # load the actual T1 images
+  mid_base_img = nib.load(mid_baseline_filenames[i])
+  mid_base_data = np.array(mid_base_img.get_data())
 
-  resample_seg_cmd1 = 'reg_resample -ref %s -flo %s -trans %s -res %s -inter 0' % (baseline_filenames[i], seg_baseline_filenames[i], aff_halfFA_mat_filenames[i], seg_mid_baseline_filenames[i])
-  resample_seg_cmd2 = 'reg_resample -ref %s -flo %s -trans %s -res %s -inter 0' % (baseline_filenames[i], seg_followup_filenames[i], aff_halfAF_mat_filenames[i], seg_mid_followup_filenames[i])
+  mid_followup_img = nib.load(mid_followup_filenames[i])
+  mid_followup_data = np.array(mid_followup_img.get_data())
 
-  if DEBUG:
-    print resample_seg_cmd1
-    print resample_seg_cmd2
-  if EXEC_CMD:
-    os.system(resample_seg_cmd1)
-    os.system(resample_seg_cmd2)
+  # normalise the intensity by the average value in the T1-values at the intersection
+  mid_base_int = mid_base_data * seg_intersection
+  if np.count_nonzero(mid_base_int) > 0:
+    mean_base_int = np.sum(mid_base_int).astype(float)/np.count_nonzero(mid_base_int)
+    mid_base_data = mid_base_data.astype(float) / mean_base_int
+  else:
+    print 'mid_base_int contains only zero elements'
 
 
+  mid_followup_int = mid_followup_data * seg_intersection
+  if np.count_nonzero(mid_base_int) > 0:
+    mean_followup_int = np.sum(mid_followup_int).astype(float)/np.count_nonzero(mid_followup_int)
+    mid_followup_data = mid_followup_data.astype(float) / mean_followup_int
+  else:
+    print 'mid_followup_int contains only zero elements'
+
+  # window the data to the 0.45 - 0.65 range
+  windowed_base_data = mid_base_data * clip_matrix(mid_base_data, window[1], window[0])
+  windowed_followup_data = mid_followup_data * clip_matrix(mid_followup_data, window[1], window[0])
+  
+  #pdb.set_trace()
+  bsi[i] = np.sum((windowed_base_data - windowed_followup_data) * seg_boundary) 
+  
+  diff_image = (mid_base_data - mid_followup_data) * seg_boundary
+  print 'diff: %f       bsi %f' % (np.sum(diff_image), bsi[i])
+  nib_seg_boundary_image = nib.Nifti1Image(diff_image, seg_mid_base_img.affine)
+  nib.save(nib_seg_boundary_image, seg_boundary_filenames[i])
+
+print bsi

@@ -3,24 +3,26 @@ import nibabel as nib
 import numpy as np
 import scipy
 from scipy import ndimage
+import sys
 
 NR_TEMP = 10;
-NR_SEG = 15;
+NR_BEG = int(sys.argv[1]);
+NR_SEG = int(sys.argv[2]);
 
 DEBUG = 1
 
-long_AD_baseline_filenames = ['AD_' + str(i) + '_baseline.nii' for i in range(NR_SEG)]
-long_AD_followup_filenames = ['AD_' + str(i) + '_followup.nii' for i in range(NR_SEG)]
-long_CTL_baseline_filenames = ['CTL_' + str(i) + '_baseline.nii' for i in range(NR_SEG)]
-long_CTL_followup_filenames = ['CTL_' + str(i) + '_followup.nii' for i in range(NR_SEG)]
+long_AD_baseline_filenames = ['AD_' + str(i) + '_baseline.nii' for i in range(NR_BEG,NR_SEG)]
+long_AD_followup_filenames = ['AD_' + str(i) + '_followup.nii' for i in range(NR_BEG, NR_SEG)]
+long_CTL_baseline_filenames = ['CTL_' + str(i) + '_baseline.nii' for i in range(NR_BEG, NR_SEG)]
+long_CTL_followup_filenames = ['CTL_' + str(i) + '_followup.nii' for i in range(NR_BEG, NR_SEG)]
 
 baseline_filenames = long_AD_baseline_filenames + long_CTL_baseline_filenames 
 followup_filenames = long_AD_followup_filenames + long_CTL_followup_filenames
 
-aff_reg_AD_filenames = ['AD_' + str(i) + '_aff.nii' for i in range(NR_SEG)]
-aff_reg_CTL_filenames = ['CTL_' + str(i) + '_aff.nii' for i in range(NR_SEG)]
-aff_mat_AD_filenames = ['AD_' + str(i) + '_aff_mat.txt' for i in range(NR_SEG)]
-aff_mat_CTL_filenames = ['CTL_' + str(i) + '_aff_mat.txt' for i in range(NR_SEG)]
+aff_reg_AD_filenames = ['AD_' + str(i) + '_aff.nii' for i in range(NR_BEG, NR_SEG)]
+aff_reg_CTL_filenames = ['CTL_' + str(i) + '_aff.nii' for i in range(NR_BEG, NR_SEG)]
+aff_mat_AD_filenames = ['AD_' + str(i) + '_aff_mat.txt' for i in range(NR_BEG, NR_SEG)]
+aff_mat_CTL_filenames = ['CTL_' + str(i) + '_aff_mat.txt' for i in range(NR_BEG, NR_SEG)]
 
 aff_reg_filenames = aff_reg_AD_filenames + aff_reg_CTL_filenames
 aff_mat_filenames = aff_mat_AD_filenames + aff_mat_CTL_filenames
@@ -38,14 +40,6 @@ seg_mid_baseline_filenames = [name.split(".")[0] + "_midspace_brain.nii" for nam
 seg_mid_followup_filenames = [name.split(".")[0] + "_midspace_brain.nii" for name in followup_filenames]
 
 aladin_options = "-speeeeed ";
-
-# max 4 levels, 300 iterations each
-f3d_options = "-ln 4 -maxit 200"; # I think 4 lvl x 200 it is ideal
-#f3d_options = "-ln 1 -maxit 10"; # I think 4 lvl x 200 it is ideal
-# 2 lvl 200 it - 1m26sec
-# 3 lvl 300 it - 2m16sec
-# 4 lvl 300 it - 2m18sec
-# 4 lvl 200 it - 1m30sec
 
 EXEC_CMD = 1;
 
