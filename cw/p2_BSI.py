@@ -4,6 +4,7 @@ import numpy as np
 import scipy
 from scipy import ndimage
 import pdb
+import csv
 
 NR_TEMP = 10;
 NR_SEG = 15;
@@ -45,6 +46,8 @@ NR_FILES = len(baseline_filenames)
 window = [0.45, 0.65]
 
 bsi = np.zeros(NR_FILES, float)
+scaled_bsi = np.zeros(NR_FILES, float)
+full_volume_diff = np.zeros(NR_FILES, float)
 #os.system("cd longitudinal_images/")
 
 
@@ -108,10 +111,17 @@ for i in range(NR_FILES):
   
   #pdb.set_trace()
   bsi[i] = np.sum((windowed_base_data - windowed_followup_data) * seg_boundary) 
+  scaled_bsi[i] = bsi[i] / np.sum(seg_intersection)
+  full_volume_diff[i] = np.sum(seg_mid_base_data - seg_mid_followup_data)
   
   diff_image = (mid_base_data - mid_followup_data) * seg_boundary
   print 'diff: %f       bsi %f' % (np.sum(diff_image), bsi[i])
   nib_seg_boundary_image = nib.Nifti1Image(diff_image, seg_mid_base_img.affine)
   nib.save(nib_seg_boundary_image, seg_boundary_filenames[i])
 
-print bsi
+with open("../bsi.csv",'w') as f:
+  csvwriter = csv.writer(f, delimiter=',')
+  csvwriter.writerow(bsi)
+  csvwriter.writerow(full_volume_diff)
+
+
