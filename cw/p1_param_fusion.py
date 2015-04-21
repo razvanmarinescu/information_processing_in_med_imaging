@@ -1,4 +1,8 @@
 import os
+import nibabel as nib
+import numpy as np
+import csv
+
 
 NR_TEMP = 10;
 NR_SEG = 5;
@@ -19,12 +23,11 @@ aladin_options = "-speeeeed ";
 levels = [2,3,4,5]
 iterations = [50, 150, 200,300]
 
-exec_cmd = 1
-debug = 0
+debug = 1
 
 level_indices = range(len(levels))
 iter_indices = range(len(iterations))
-r_indices= range(1,3) # only do 3 rounds out of 10, because it takes a very long time
+r_indices= range(3) # only do 3 rounds out of 10, because it takes a very long time
 if debug:
   level_indices=[0]
   iter_indices=[0]    
@@ -39,6 +42,15 @@ if debug:
 
 #os.system("cd longitudinal_images/")
 
+sample_img = nib.load('t2_AD_11_followup_brain.nii')
+print sample_img.shape
+(dimX, dimY, dimZ) = sample_img.shape
+
+def compDice(a, b):
+  return 2*np.sum(a*b)/np.sum(a+b) 
+
+
+dice = np.zeros((len(level_indices), len(iter_indices), len(r_indices)), float)
 for l in level_indices:
   for it in iter_indices:
     f3d_options = "-ln %d -maxit %d" % (levels[l], iterations[it]); # I think 4 lvl x 200 it is ideal
@@ -48,27 +60,31 @@ for l in level_indices:
       print t_indices
       if debug:
         t_indices = [t_indices[0]]
-      t_indices = [r-1]
 
       fold_prefix = "l%di%d/r%d" % (l, it,r)
       os.system("mkdir -p %s" % fold_prefix)
-      
+    
+      fused_image = np.zeros((dimX, dimY, dimZ),int)      
+
       for t in t_indices:
-        aff_reg_cmd = 'reg_aladin -ref %s -flo %s -res %s/%s -aff %s/%s %s' % (templates[r], templates[t], fold_prefix, aff_reg_filenames[t], fold_prefix, aff_mat_filenames[t], aladin_options)
-        print aff_reg_cmd
-        if exec_cmd:
-          os.system(aff_reg_cmd)
-        
-        nonlin_reg_cmd = 'reg_f3d -ref %s -flo %s -res %s/%s -aff %s/%s -cpp %s/%s %s' % (templates[r], templates[t], fold_prefix, nonlin_reg_filenames[t], fold_prefix, aff_mat_filenames[t], fold_prefix, nonlin_cpp_filenames[t], f3d_options)
-
-        print nonlin_reg_cmd
-        if exec_cmd:
-          os.system(nonlin_reg_cmd)
-
-        resample_cmd = 'reg_resample -ref %s -flo %s -res %s/%s -trans %s/%s -inter 0' % (templates[r], labeled_temp_filenames[t], fold_prefix, segmented_filenames[t], fold_prefix, nonlin_cpp_filenames[t])
-
-        print resample_cmd
-        if exec_cmd:
-          os.system(resample_cmd)
+        imgt = nib.load("%s/%s" % (fold_prefix, segmented_filenames[t]))
+        data = imgt.get_data()
+        fused_image += data
 
 
+      # do majority voting
+      fused_image = (fused_image > (len(t_indices)/2)).astype(np.uint8);  
+      
+      nib_fused_image = nib.Nifti1Image(fused_image, imgt.affine)
+      nib.save(nib_fused_image, fold_prefix + "/fused.nii")
+
+
+      tempImg = nib.load(templates[r])
+      tempData = imgt.get_data()
+
+      dice[l,it,r] = compDice(fused_image, tempData)
+      print dice[l,it,r]
+
+
+print dice
+np.savetxt("../dice.txt", dice)

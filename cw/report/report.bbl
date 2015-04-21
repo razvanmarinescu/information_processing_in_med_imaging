@@ -1,0 +1,25 @@
+\begin{thebibliography}{1}
+
+\bibitem{freeborough1997boundary}
+Peter~A Freeborough and Nick~C Fox.
+\newblock The boundary shift integral: an accurate and robust measure of
+  cerebral volume changes from registered repeat mri.
+\newblock {\em Medical Imaging, IEEE Transactions on}, 16(5):623--629, 1997.
+
+\bibitem{leung2010robust}
+Kelvin~K Leung, Matthew~J Clarkson, Jonathan~W Bartlett, Shona Clegg,
+  Clifford~R Jack, Michael~W Weiner, Nick~C Fox, S{\'e}bastien Ourselin,
+  Alzheimer's Disease~Neuroimaging Initiative, et~al.
+\newblock Robust atrophy rate measurement in alzheimer's disease using
+  multi-site serial mri: tissue-specific intensity normalization and parameter
+  selection.
+\newblock {\em Neuroimage}, 50(2):516--523, 2010.
+
+\bibitem{malone2013miriad}
+Ian~B Malone, David Cash, Gerard~R Ridgway, David~G MacManus, Sebastien
+  Ourselin, Nick~C Fox, and Jonathan~M Schott.
+\newblock Miriad—public release of a multiple time point alzheimer's mr
+  imaging dataset.
+\newblock {\em NeuroImage}, 70:33--36, 2013.
+
+\end{thebibliography}

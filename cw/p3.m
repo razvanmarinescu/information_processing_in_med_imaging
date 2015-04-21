@@ -13,11 +13,11 @@ ad2 = bsi(2,1:N/2); % full volume segmentation difference
 ctl2 = bsi(2, (N/2)+1:end); % full volume segmentation difference
 
 
-[H1_bsi, p1_bsi, CI1_bsi, stats1_bsi] = ttest(ad1, ctl1);
-[H2_bsi, p2_bsi, CI2_bsi, stats2_bsi] = ttest2(ad1, ctl1);
+[H1_bsi, p1_bsi, CI1_bsi, stats1_bsi] = ttest(ad1, ctl1); % paired-sample
+[H2_bsi, p2_bsi, CI2_bsi, stats2_bsi] = ttest2(ad1, ctl1); % two-sample
 
-[H1_seg, p1_seg, CI1_seg, stats1_seg] = ttest(ad2, ctl2);
-[H2_seg, p2_seg, CI2_seg, stats2_seg] = ttest2(ad2, ctl2);
+[H1_seg, p1_seg, CI1_seg, stats1_seg] = ttest(ad2, ctl2); % paired-sample
+[H2_seg, p2_seg, CI2_seg, stats2_seg] = ttest2(ad2, ctl2); % two-sample
 
 mu_ad_bsi = mean(ad1);
 sigma_ad_bsi = std(ad1);
@@ -42,8 +42,25 @@ sample_size_seg = sampsizepwr('t',[mu_ad_seg sigma_ad_seg],mu_ad_seg * 0.75,0.8)
 % full vol seg - for detecting 25% atrophy reduction relative to normal ageing
 sample_size_seg_ageing = sampsizepwr('t',[mu_ctl_seg sigma_ctl_seg],mu_ctl_seg * 0.75,0.8);
 
-plot(ad1)
+plotBSI(ad1, ctl1, 'report/figures/bsi_plot.eps', 'BSI');
+
+plotBSI(ad2, ctl2, 'report/figures/fullVolumePlot.eps', 'Full volume diff');
+
+end
+
+function plotBSI(ad1, ctl1, filename,yLabel)
+
+h = figure
+plot(ad1,'linewidth',2)
 hold on
-plot(ctl1)
+plot(ctl1,'linewidth',2)
+legend('AD', 'Controls', 'Location','northoutside')
+set(gca,'FontSize',14);
+set(h,'Position', [0 0 700 400]);
+xlabel('Subject number')
+ylabel(yLabel)
+ax = gca;
+ax.XTick = 1:15;
+hgexport(h,filename)
 
 end
