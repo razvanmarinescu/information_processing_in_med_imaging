@@ -94,6 +94,7 @@ for i in range(NR_FILES):
   if np.count_nonzero(mid_base_int) > 0:
     mean_base_int = np.sum(mid_base_int).astype(float)/np.count_nonzero(mid_base_int)
     mid_base_data = mid_base_data.astype(float) / mean_base_int
+    print "mean_base_intersection: ", mean_base_int
   else:
     print 'mid_base_int contains only zero elements'
 

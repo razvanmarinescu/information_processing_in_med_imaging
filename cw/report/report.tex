@@ -34,7 +34,7 @@ urlcolor=black
 
 \usepackage{titlesec} % reduce spacing after subsections
 
-\titlespacing\subsection{0pt}{4pt plus 4pt minus 2pt}{4pt plus 2pt minus 2pt}
+% \titlespacing\subsection{0pt}{4pt plus 4pt minus 2pt}{4pt plus 2pt minus 2pt}
 
 \usepackage{multicol}
 
@@ -100,8 +100,8 @@ Student Number: 14060166\\
 
 
 \begin{document}
-\belowdisplayskip=12pt plus 3pt minus 9pt
-\belowdisplayshortskip=7pt plus 3pt minus 4pt
+% \belowdisplayskip=12pt plus 3pt minus 9pt
+% \belowdisplayshortskip=7pt plus 3pt minus 4pt
 
 \begin{titlepage}
 \begin{center}
@@ -215,8 +215,18 @@ MATLAB function \texttt{samplesizepwr} has been used to calculate the sample siz
 
 \subsection*{Future improvements}
 
+In order to improve the statistical power of this technique, there are several things one could do:
+\begin{itemize}
+ \item \textbf{Data acquisition}: Obtain higher-resolution MRI data using 7T or 9T scanners. In our MIRIAD dataset \cite{malone2013miriad}, a 1.5T scanner was used. 
+ \item \textbf{Registration}: Calculate the transformation using more levels and iterations at the free-form deformation step.
+ \item \textbf{Segmentation}: using more templates, or by implementing smarter fusion methods such as weighted majority voting or probabilistic methods such as Non-local-STAPLE or STEPS. One other limitation of this method is that the templates might produce similar labeling errors, but this can be overcome with the method proposed by Wang et al, 2013 \cite{wang2013multi}. One could also combine the segmentation propagation method with other methods based on level sets \cite{cremers2007review}, fuzzy c-means \cite{bezdek1984fcm}, Gaussian mixture models using EM, Markov random fields, Self organising maps \cite{bhandarkar1997multiscale} or Learning vector quantization \cite{karayiannis1999segmentation}.
+ \item \textbf{Atrophy estimation}: Perform a bias field correction before BSI computation and do a more robust intensity normalisation and automatic parameter selection based on the intrinsic tissue contrast of the MR images, as described in Leung et al, 2010 \cite{leung2010robust}.
+\end{itemize}
 
-\bibliographystyle{plain}
+Demographic information could also be included in order to improve the statistical analysis. For example, one could compensate for age in the atrophy measurement using the BSI by fitting a linear or polynomial model over the age & BSI data. The two-sample t-test should show improvements after this change, while the paired t-test shouldn't be affected too much, as the AD and control pairs are already age-matched. If gender information is also available, one could use that to perform a t-test on male and female groups in order to see if the atrophy rate is statistically different. Other demographic information could be used in a similar manner. If multiple types of demographic data is used, one could perform \textit{Canonical Correlation Analysis} in order to find out how much each of these demographic factors are correlated with increased atrophy rate and full volume difference.
+
+
+\bibliographystyle{unsrt}
 \bibliography{citations}
 
 \end{document}

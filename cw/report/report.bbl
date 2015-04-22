@@ -1,11 +1,5 @@
 \begin{thebibliography}{1}
 
-\bibitem{freeborough1997boundary}
-Peter~A Freeborough and Nick~C Fox.
-\newblock The boundary shift integral: an accurate and robust measure of
-  cerebral volume changes from registered repeat mri.
-\newblock {\em Medical Imaging, IEEE Transactions on}, 16(5):623--629, 1997.
-
 \bibitem{leung2010robust}
 Kelvin~K Leung, Matthew~J Clarkson, Jonathan~W Bartlett, Shona Clegg,
   Clifford~R Jack, Michael~W Weiner, Nick~C Fox, S{\'e}bastien Ourselin,
@@ -15,11 +9,47 @@ Kelvin~K Leung, Matthew~J Clarkson, Jonathan~W Bartlett, Shona Clegg,
   selection.
 \newblock {\em Neuroimage}, 50(2):516--523, 2010.
 
+\bibitem{freeborough1997boundary}
+Peter~A Freeborough and Nick~C Fox.
+\newblock The boundary shift integral: an accurate and robust measure of
+  cerebral volume changes from registered repeat mri.
+\newblock {\em Medical Imaging, IEEE Transactions on}, 16(5):623--629, 1997.
+
 \bibitem{malone2013miriad}
 Ian~B Malone, David Cash, Gerard~R Ridgway, David~G MacManus, Sebastien
   Ourselin, Nick~C Fox, and Jonathan~M Schott.
 \newblock Miriad—public release of a multiple time point alzheimer's mr
   imaging dataset.
 \newblock {\em NeuroImage}, 70:33--36, 2013.
+
+\bibitem{wang2013multi}
+Hongzhi Wang, Jung~Wook Suh, Sandhitsu~R Das, John~B Pluta, Caryne Craige, and
+  Paul~A Yushkevich.
+\newblock Multi-atlas segmentation with joint label fusion.
+\newblock {\em Pattern Analysis and Machine Intelligence, IEEE Transactions
+  on}, 35(3):611--623, 2013.
+
+\bibitem{cremers2007review}
+Daniel Cremers, Mikael Rousson, and Rachid Deriche.
+\newblock A review of statistical approaches to level set segmentation:
+  integrating color, texture, motion and shape.
+\newblock {\em International journal of computer vision}, 72(2):195--215, 2007.
+
+\bibitem{bezdek1984fcm}
+James~C Bezdek, Robert Ehrlich, and William Full.
+\newblock Fcm: The fuzzy c-means clustering algorithm.
+\newblock {\em Computers \& Geosciences}, 10(2):191--203, 1984.
+
+\bibitem{bhandarkar1997multiscale}
+Suchendra~M Bhandarkar, Jean Koh, and Minsoo Suk.
+\newblock Multiscale image segmentation using a hierarchical self-organizing
+  map.
+\newblock {\em Neurocomputing}, 14(3):241--272, 1997.
+
+\bibitem{karayiannis1999segmentation}
+Nicolaos~B Karayiannis and Pin-I Pai.
+\newblock Segmentation of magnetic resonance images using fuzzy algorithms for
+  learning vector quantization.
+\newblock {\em Medical Imaging, IEEE Transactions on}, 18(2):172--180, 1999.
 
 \end{thebibliography}

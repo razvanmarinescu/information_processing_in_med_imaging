@@ -1,8 +1,6 @@
 import os
-import nibabel as nib
+import time
 import numpy as np
-import csv
-
 
 NR_TEMP = 10;
 NR_SEG = 5;
@@ -23,6 +21,7 @@ aladin_options = "-speeeeed ";
 levels = [2,3,4,5]
 iterations = [50, 150, 200,300]
 
+exec_cmd = 1
 debug = 0
 
 level_indices = range(len(levels))
@@ -41,56 +40,54 @@ if debug:
 # 4 lvl 200 it - 1m30sec
 
 #os.system("cd longitudinal_images/")
+timeTaken = np.zeros((4,4,10), float)
+print timeTaken.shape
 
-sample_img = nib.load('t2_AD_11_followup_brain.nii')
-print sample_img.shape
-(dimX, dimY, dimZ) = sample_img.shape
-
-def compDice(a, b):
-  return 2*np.sum(a*b)/np.sum(a+b) 
-
-
-dice = np.zeros((len(level_indices), len(iter_indices), len(r_indices)), float)
+fDebug = open("../timeDebug.txt","w")
+fDebug.write("times: ")
 
 for l in level_indices:
   for it in iter_indices:
     f3d_options = "-ln %d -maxit %d" % (levels[l], iterations[it]); # I think 4 lvl x 200 it is ideal
 
     for r in r_indices:
+      
+      start_time = time.time()  
+
       t_indices = range(0,r) + range(r+1,NR_TEMP)
-      #print t_indices
+      print t_indices
       if debug:
         t_indices = [t_indices[0]]
+      t_indices = [0]
 
       fold_prefix = "l%di%d/r%d" % (l, it,r)
       os.system("mkdir -p %s" % fold_prefix)
-    
-      fused_image = np.zeros((dimX, dimY, dimZ),int)      
-
-      for t in t_indices:
-        imgt = nib.load("%s/%s" % (fold_prefix, segmented_filenames[t]))
-        data = imgt.get_data()
-        fused_image += data
-
-
-      # do majority voting
-      fused_image = (fused_image > (len(t_indices)/2)).astype(np.uint8);  
       
-      nib_fused_image = nib.Nifti1Image(fused_image, imgt.affine)
-      nib.save(nib_fused_image, fold_prefix + "/fused.nii")
+      for t in t_indices:
+        aff_reg_cmd = 'reg_aladin -ref %s -flo %s -res %s/%s -aff %s/%s %s' % (templates[r], templates[t], fold_prefix, aff_reg_filenames[t], fold_prefix, aff_mat_filenames[t], aladin_options)
+        print aff_reg_cmd
+        if exec_cmd:
+          os.system(aff_reg_cmd)
+        
+        nonlin_reg_cmd = 'reg_f3d -ref %s -flo %s -res %s/%s -aff %s/%s -cpp %s/%s %s' % (templates[r], templates[t], fold_prefix, nonlin_reg_filenames[t], fold_prefix, aff_mat_filenames[t], fold_prefix, nonlin_cpp_filenames[t], f3d_options)
 
+        print nonlin_reg_cmd
+        if exec_cmd:
+          os.system(nonlin_reg_cmd)
 
-      tempImg = nib.load(templates[r])
-      tempData = imgt.get_data()
+        resample_cmd = 'reg_resample -ref %s -flo %s -res %s/%s -trans %s/%s -inter 0' % (templates[r], labeled_temp_filenames[t], fold_prefix, segmented_filenames[t], fold_prefix, nonlin_cpp_filenames[t])
 
-      dice[l,it,r] = compDice(fused_image, tempData)
-      #print dice[l,it,r]
+        print resample_cmd
+        if exec_cmd:
+          os.system(resample_cmd)
 
+      end_time = time.time()
+      timeTaken[l,it,r] = start_time - end_time    
+      fDebug.write("%f," % timeTaken[l, it, r])
 
-print dice
-#with open("../dice.txt","w") as f:
-#  writer = csvwriter(f, delimiter=',')
-np.savetxt("../dice_l0.txt", dice[0,:,:], delimiter=',')
-np.savetxt("../dice_l1.txt", dice[1,:,:], delimiter=',')
-np.savetxt("../dice_l2.txt", dice[2,:,:], delimiter=',')
-np.savetxt("../dice_l3.txt", dice[3,:,:], delimiter=',')
+print timeTaken
+np.savetxt("../time_l0.txt", timeTaken[0,:,:], delimiter=',')
+np.savetxt("../time_l1.txt", timeTaken[1,:,:], delimiter=',')
+np.savetxt("../time_l2.txt", timeTaken[2,:,:], delimiter=',')
+np.savetxt("../time_l3.txt", timeTaken[3,:,:], delimiter=',')
+
