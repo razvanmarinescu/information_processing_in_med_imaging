@@ -22,6 +22,12 @@ Ian~B Malone, David Cash, Gerard~R Ridgway, David~G MacManus, Sebastien
   imaging dataset.
 \newblock {\em NeuroImage}, 70:33--36, 2013.
 
+\bibitem{melbourne2007registration}
+A~Melbourne, D~Atkinson, MJ~White, D~Collins, M~Leach, and D~Hawkes.
+\newblock Registration of dynamic contrast-enhanced mri using a progressive
+  principal component registration (ppcr).
+\newblock {\em Physics in medicine and biology}, 52(17):5147, 2007.
+
 \bibitem{wang2013multi}
 Hongzhi Wang, Jung~Wook Suh, Sandhitsu~R Das, John~B Pluta, Caryne Craige, and
   Paul~A Yushkevich.

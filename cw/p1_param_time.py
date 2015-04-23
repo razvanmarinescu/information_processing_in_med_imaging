@@ -82,7 +82,7 @@ for l in level_indices:
           os.system(resample_cmd)
 
       end_time = time.time()
-      timeTaken[l,it,r] = start_time - end_time    
+      timeTaken[l,it,r] = end_time - start_time    
       fDebug.write("%f," % timeTaken[l, it, r])
 
 print timeTaken
